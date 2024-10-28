@@ -4,13 +4,18 @@ import VisualTab from './components/VisualTab.vue';
 import GraficaComponent from './components/GraficaComponent.vue';
 import AdminRegister from './components/AdminRegister.vue';
 import LoginComponent from './components/LoginComponent.vue';
-import Home from './components/Home.vue';
+import HomeC from './components/HomeC.vue';
+import TablaUsuarios from './components/TablaUsuarios.vue';
+import PerfilComponent from './components/PerfilComponent.vue';
+import VisualTabAdmin from './components/VisualTabAdmin.vue';
+import AdminUsuarios from './components/AdminUsuarios.vue';
+
 
 const routes = [
   { 
     path: '/', 
     name: 'Home',
-    component: Home 
+    component: HomeC
   },
   { 
     path: '/registrof', 
@@ -36,7 +41,29 @@ const routes = [
     path: '/login', 
     name: 'Login',
     component: LoginComponent 
+  },
+  { 
+    path: '/tablaUs', 
+    name: 'TablaUs',
+    component: TablaUsuarios 
+  },
+  {
+    path: '/perfil',
+    name: 'Perfil',
+    component: PerfilComponent,
+  },
+  { 
+    path: '/visualAdmin',
+    name: 'VisualizacionAdmin',
+    component: VisualTabAdmin
+  },
+  {
+    path: '/adminUs',
+    name: 'AdminUs',
+    component: AdminUsuarios,
   }
+  
+  
 ];
 
 const router = createRouter({

@@ -9,34 +9,30 @@
           <div>
             <label for="nombre" class="sr-only">Nombre</label>
             <input v-model="newUser.nombre" id="nombre" name="nombre" type="text" required
-              class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Nombre">
+              class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+              placeholder="Nombre">
             <p v-if="errors.nombre" class="text-red-500 text-xs italic">{{ errors.nombre }}</p>
           </div>
           <div>
-            <label for="correo" class="sr-only">Correo</label>
-            <input v-model="newUser.correo" id="correo" name="correo" type="email" required
-              class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="Correo">
-            <p v-if="errors.correo" class="text-red-500 text-xs italic">{{ errors.correo }}</p>
+            <label for="telefono" class="sr-only">Teléfono</label>
+            <input v-model="newUser.telefono" id="telefono" name="telefono" type="tel" required
+              class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+              placeholder="Teléfono">
+            <p v-if="errors.telefono" class="text-red-500 text-xs italic">{{ errors.telefono }}</p>
           </div>
           <div>
             <label for="rol" class="sr-only">Rol</label>
             <select v-model="newUser.rol" id="rol" name="rol" required
               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm">
-              <option value="normal">Normal</option>
-              <option value="admin">Administrador</option>
-              <option value="gerente">Gerente</option>
+              <option value="Directora">Directora</option>
+              <option value="Auxiliar Administrativo">Auxiliar Administrativo</option>
             </select>
-          </div>
-          <div v-if="newUser.rol === 'normal'">
-            <label for="id_usuario" class="sr-only">ID Usuario</label>
-            <input v-model="newUser.id_usuario" id="id_usuario" name="id_usuario" type="number" required
-              class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm" placeholder="ID Usuario">
-            <p v-if="errors.id_usuario" class="text-red-500 text-xs italic">{{ errors.id_usuario }}</p>
           </div>
         </div>
 
         <div>
-          <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+          <button type="submit"
+            class="group relative w-full flex justify-center py-3 px-6 border border-transparent text-lg font-semibold rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-offset-2 focus:ring-indigo-500 shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
             Registrar Usuario
           </button>
         </div>
@@ -48,26 +44,32 @@
       <div v-if="errorMessage" class="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-md">
         <p class="text-sm">{{ errorMessage }}</p>
       </div>
+      <div class="mt-10">
+        <button @click="redirectToPerfil"
+          class="w-full flex justify-center py-3 px-6 border border-transparent text-lg font-semibold rounded-lg text-white bg-green-500 hover:bg-green-600 shadow-md hover:shadow-lg transition ease-in-out duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-400">
+          Ir a Perfil
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 export default {
   setup() {
     const newUser = ref({
       nombre: '',
-      correo: '',
-      rol: 'normal',
-      id_usuario: ''
+      telefono: '',
+      rol: 'Auxiliar Administrativo'
     })
     const registrationCode = ref('')
     const errorMessage = ref('')
     const errors = ref({})
+    const router = useRouter()
 
-    // Function to generate a unique random code
     const generateRandomCode = () => {
       const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
       let code = '';
@@ -86,16 +88,11 @@ export default {
         valid = false
       }
 
-      if (!newUser.value.correo) {
-        errors.value.correo = 'El correo es obligatorio.'
+      if (!newUser.value.telefono) {
+        errors.value.telefono = 'El teléfono es obligatorio.'
         valid = false
-      } else if (!/\S+@\S+\.\S+/.test(newUser.value.correo)) {
-        errors.value.correo = 'El correo no es válido.'
-        valid = false
-      }
-
-      if (newUser.value.rol === 'normal' && !newUser.value.id_usuario) {
-        errors.value.id_usuario = 'El ID de usuario es obligatorio para usuarios normales.'
+      } else if (!/^\d{10}$/.test(newUser.value.telefono)) {
+        errors.value.telefono = 'El teléfono debe tener 10 dígitos.'
         valid = false
       }
 
@@ -108,23 +105,16 @@ export default {
       }
 
       try {
-        // Asignar un código de acceso único al usuario
         newUser.value.codigo_acceso = generateRandomCode();
 
-        // Preparar los datos para el backend
         const userToRegister = {
           nombre: newUser.value.nombre,
-          correo: newUser.value.correo,
+          telefono: newUser.value.telefono,
           rol: newUser.value.rol,
           codigo_acceso: newUser.value.codigo_acceso
         }
 
-        // Agregar id_usuario si el rol es 'normal'
-        if (newUser.value.rol === 'normal') {
-          userToRegister.id_usuario = newUser.value.id_usuario
-        }
-
-        const response = await fetch('http://localhost:3030/api/registro_usuarios', { // Cambia la URL aquí
+        const response = await fetch('http://localhost:3030/api/registro_usuarios', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -139,27 +129,30 @@ export default {
 
         const data = await response.json();
         registrationCode.value = data.codigo_acceso || newUser.value.codigo_acceso
-        errorMessage.value = '' 
-        newUser.value = { nombre: '', correo: '', rol: 'normal', id_usuario: '' }
+        errorMessage.value = ''
+        newUser.value = { nombre: '', telefono: '', rol: 'Auxiliar Administrativo' }
       } catch (error) {
         errorMessage.value = 'Error al registrar usuario: ' + error.message
       }
+    }
+
+    const redirectToPerfil = () => {
+      router.push({ name: 'Perfil' })
     }
 
     return {
       newUser,
       registerUser,
       registrationCode,
-      generateRandomCode,
       errorMessage,
-      errors
+      errors,
+      redirectToPerfil
     }
   }
 }
 </script>
 
 <style scoped>
-/* (Tus estilos aquí) */
 .min-h-screen {
   min-height: 100vh;
 }
@@ -208,7 +201,7 @@ export default {
   width: 100%;
 }
 
-.space-y-8 > :not([hidden]) ~ :not([hidden]) {
+.space-y-8> :not([hidden])~ :not([hidden]) {
   margin-top: 2rem;
 }
 
@@ -249,7 +242,7 @@ export default {
   margin-top: 2rem;
 }
 
-.space-y-6 > :not([hidden]) ~ :not([hidden]) {
+.space-y-6> :not([hidden])~ :not([hidden]) {
   margin-top: 1.5rem;
 }
 
@@ -261,7 +254,7 @@ export default {
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 }
 
-.-space-y-px > :not([hidden]) ~ :not([hidden]) {
+.-space-y-px> :not([hidden])~ :not([hidden]) {
   border-top-width: 0;
 }
 
@@ -313,7 +306,7 @@ export default {
 }
 
 .focus\:ring-indigo-500:focus {
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
 }
 
 .focus\:border-indigo-500:focus {
@@ -330,11 +323,11 @@ export default {
 }
 
 .group {
-  display: block;
+  position: relative;
 }
 
-.relative {
-  position: relative;
+.w-full {
+  width: 100%;
 }
 
 .flex {
@@ -345,35 +338,31 @@ export default {
   justify-content: center;
 }
 
-.py-2 {
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
+.py-3 {
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
 }
 
-.px-4 {
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-
-.border {
-  border-width: 1px;
+.px-6 {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
 }
 
 .border-transparent {
   border-color: transparent;
 }
 
-.text-sm {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
+.text-lg {
+  font-size: 1.125rem;
+  line-height: 1.5rem;
 }
 
-.font-medium {
-  font-weight: 500;
+.font-semibold {
+  font-weight: 600;
 }
 
-.rounded-md {
-  border-radius: 0.375rem;
+.rounded-lg {
+  border-radius: 0.5rem;
 }
 
 .text-white {
@@ -388,13 +377,45 @@ export default {
   background-color: #4338ca;
 }
 
-.focus\:ring-2:focus {
-  ring-width: 2px;
+.focus\:outline-none:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+}
+
+.focus\:ring-4:focus {
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.5);
 }
 
 .focus\:ring-offset-2:focus {
-  ring-offset-width: 2px;
-  ring-offset-color: #fff;
+  outline-offset: 2px;
+}
+
+.focus\:ring-indigo-500:focus {
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+}
+
+.shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+.transition {
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+}
+
+.duration-300 {
+  transition-duration: 300ms;
+}
+
+.ease-in-out {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.transform {
+  transform: translateZ(0);
+}
+
+.hover\:scale-105:hover {
+  transform: scale(1.05);
 }
 
 .mt-4 {
@@ -406,39 +427,23 @@ export default {
 }
 
 .bg-green-100 {
-  background-color: #bbf7d0;
+  background-color: #d1fae5;
+}
+
+.border {
+  border-width: 1px;
 }
 
 .border-green-400 {
-  border-color: #bbf7d0;
+  border-color: #34d399;
 }
 
 .text-green-700 {
-  color: #2f855a;
+  color: #065f46;
 }
 
 .rounded-md {
   border-radius: 0.375rem;
-}
-
-.text-xs {
-  font-size: 0.75rem;
-}
-
-.italic {
-  font-style: italic;
-}
-
-.bg-red-100 {
-  background-color: #fee2e2;
-}
-
-.border-red-400 {
-  border-color: #fee2e2;
-}
-
-.text-red-700 {
-  color: #c53030;
 }
 
 .font-bold {
@@ -447,5 +452,62 @@ export default {
 
 .text-lg {
   font-size: 1.125rem;
+  line-height: 1.5rem;
+}
+
+.bg-red-100 {
+  background-color: #fee2e2;
+}
+
+.border-red-400 {
+  border-color: #f87171;
+}
+
+.text-red-700 {
+  color: #b91c1c;
+}
+
+.mt-10 {
+  margin-top: 2.5rem;
+}
+
+.bg-green-500 {
+  background-color: #22c55e;
+}
+
+.hover\:bg-green-600:hover {
+  background-color: #16a34a;
+}
+
+.shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.hover\:shadow-lg:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+.transition {
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+}
+
+.ease-in-out {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.duration-300 {
+  transition-duration: 300ms;
+}
+
+.focus\:ring-2:focus {
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.5);
+}
+
+.focus\:ring-offset-2:focus {
+  outline-offset: 2px;
+}
+
+.focus\:ring-green-400:focus {
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.5);
 }
 </style>

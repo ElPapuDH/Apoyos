@@ -8,34 +8,26 @@
         <div class="rounded-md shadow-sm -space-y-px">
           <div>
             <label for="nombre" class="sr-only">Nombre</label>
-            <input
-              v-model="loginData.nombre"
-              id="nombre"
-              type="text"
-              required
+            <input v-model="loginData.nombre" id="nombre" type="text" required
               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              placeholder="Nombre"
-            />
+              placeholder="Nombre" />
           </div>
           <div>
             <label for="codigoAcceso" class="sr-only">Código de Acceso</label>
-            <input
-              v-model="loginData.codigoAcceso"
-              id="codigoAcceso"
-              type="text"
-              required
+            <input v-model="loginData.codigoAcceso" id="codigoAcceso" type="text" required
               class="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
-              placeholder="Código de Acceso"
-            />
+              placeholder="Código de Acceso" />
           </div>
         </div>
 
         <div>
-          <button
-            type="submit"
-            class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
+          <button type="submit" class="profile-bts w-full flex justify-center">
             Iniciar Sesión
+          </button>
+        </div>
+        <div>
+          <button @click="goToHome" type="button" class="profile-btn w-full flex justify-center">
+            Volver a Inicio
           </button>
         </div>
       </form>
@@ -46,9 +38,13 @@
   </div>
 </template>
 
+
+
 <script>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import Swal from 'sweetalert2';
+
 
 export default {
   setup() {
@@ -60,46 +56,50 @@ export default {
     const router = useRouter()
 
     const login = async () => {
-    try {
-        error.value = ''; // Limpiar errores previos
-        const response = await fetch('/api/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(loginData.value) // Envia { nombre, codigoAcceso }
+      try {
+        error.value = '';
+        const response = await fetch('http://localhost:3030/api/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(loginData.value)
         });
         const data = await response.json();
         if (data.success) {
-            // Almacenar información del usuario en el almacenamiento local o en el estado de la aplicación
-            localStorage.setItem('user', JSON.stringify(data.user));
-            // Redirigir al usuario a su página correspondiente según su rol
-            if (data.user.rol === 'admin') {
-                router.push('/admin-dashboard');
-            } else if (data.user.rol === 'gerente') {
-                router.push('/gerente-dashboard');
-            } else {
-                router.push('/user-dashboard');
-            }
+          Swal.fire({
+            title: '¡Sesión iniciada!',
+            text: 'Has iniciado sesión correctamente',
+            icon: 'success',
+            confirmButtonText: 'Aceptar'
+          });
+
+          localStorage.setItem('user', JSON.stringify(data.user));
+          router.push('/perfil');
         } else {
-            error.value = 'Nombre o código de acceso inválido';
+          error.value = 'Nombre o código de acceso inválido';
         }
-    } catch (err) {
+      } catch (err) {
         console.error('Error al iniciar sesión:', err);
         error.value = 'Ocurrió un error al intentar iniciar sesión. Por favor, intente de nuevo.';
+      }
     }
-}
+
+    const goToHome = () => {
+      router.push('/');
+    }
 
     return {
       loginData,
       login,
-      error
+      error,
+      goToHome
     }
   }
 }
 </script>
+
 <style scoped>
-/* Estilo del contenedor principal */
 .min-h-screen {
   min-height: 100vh;
 }
@@ -149,7 +149,7 @@ export default {
   width: 100%;
 }
 
-.space-y-8 > * + * {
+.space-y-8>*+* {
   margin-top: 2rem;
 }
 
@@ -169,7 +169,7 @@ export default {
   box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
 }
 
-/* Estilo del título */
+
 .text-3xl {
   font-size: 1.875rem;
 }
@@ -186,7 +186,7 @@ export default {
   color: #1a202c;
 }
 
-/* Estilo de los campos de entrada */
+
 .appearance-none {
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -247,7 +247,7 @@ export default {
   font-size: 0.875rem;
 }
 
-/* Estilo del botón */
+
 .group {
   display: inline-flex;
 }
@@ -277,7 +277,7 @@ export default {
   outline: none;
 }
 
-/* Estilo de mensajes de error */
+
 .mt-4 {
   margin-top: 1rem;
 }
@@ -300,5 +300,35 @@ export default {
 
 .rounded-md {
   border-radius: 0.375rem;
+}
+
+.profile-btn {
+  background-color: #007bff;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  font-size: 1.125rem;
+}
+
+.profile-btn:hover {
+  background-color: #0056b3;
+}
+
+.profile-bts {
+  background-color: #28a745;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 20px;
+  font-size: 1.125rem;
+}
+
+.profile-bts:hover {
+  background-color: #218838;
 }
 </style>

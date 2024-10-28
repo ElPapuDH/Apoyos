@@ -1,22 +1,14 @@
 <template>
     <div class="registro-form">
       <h2>Registrar Apoyo</h2>
-      <form @submit.prevent="submitForm">
-        <div v-if="errorMessage" class="error-message">
-          {{ errorMessage }}
-        </div>
-        <div>
-          <label for="registro">Registro:</label>
-          <input type="number" id="registro" v-model="nuevoRegistro.Registro" required />
-        </div>
+      <div v-if="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
+      <form v-if="user" @submit.prevent="submitForm">
         <div>
           <label for="fecha">Fecha:</label>
           <input type="date" id="fecha" v-model="nuevoRegistro.Fecha" required />
         </div>
-        <div>
-        <label for="id_usuario">ID de Usuario:</label>
-        <input type="number" id="id_usuario" v-model="nuevoRegistro.id_usuario" required />
-      </div>
         <div>
           <label for="nombre">Nombre:</label>
           <input type="text" id="nombre" v-model="nuevoRegistro.Nombre" required />
@@ -73,97 +65,101 @@
           {{ isSubmitting ? 'Enviando...' : 'Registrar' }}
         </button>
       </form>
+      <button @click="cancelarApoyo" class="btn btn-secondary mt-3">
+        Cancelar Apoyo
+      </button>
     </div>
   </template>
- <script setup>
- import { ref } from 'vue';
- import axios from 'axios';
- import { normalizeText } from '../utils.js'; // Asegúrate de que esta ruta es correcta
- 
- const nuevoRegistro = ref({
-   Registro: null,
-   Fecha: '',
-   id_usuario: null,
-   Nombre: '',
-   Domicilio_Calle: '',
-   Colonia_Comunidad: '',
-   Seccion: null,
-   Contacto: '',
-   TipoDeApoyo: '',
-   Descripcion_Apoyo: '',
-   Monto_Autorizado: null,
-   Otro_Tipo_De_Ayuda: '',
-   Turnado_A: '',
-   Historial: '',
-   Nube: '',
-   Observaciones: '', 
-   Status: 'En proceso',
- });
- 
- const isSubmitting = ref(false);
- const errorMessage = ref('');
- 
- const submitForm = async () => {
-   isSubmitting.value = true;
-   errorMessage.value = '';
- 
-   try {
-       // Normaliza los valores de Domicilio_Calle y Colonia_Comunidad
-       nuevoRegistro.value.Domicilio_Calle = normalizeText(nuevoRegistro.value.Domicilio_Calle);
-       nuevoRegistro.value.Colonia_Comunidad = normalizeText(nuevoRegistro.value.Colonia_Comunidad);
- 
-       // Verificar duplicados en una sola solicitud
-       const response = await axios.get('http://localhost:3000/api/registros/validate', {
-           params: {
-               Domicilio_Calle: nuevoRegistro.value.Domicilio_Calle,
-               Colonia_Comunidad: nuevoRegistro.value.Colonia_Comunidad,
-               Registro: nuevoRegistro.value.Registro
-           }
-       });
- 
-       if (response.data.exists) {
-           errorMessage.value = 'Ya existe un registro con el mismo domicilio, colonia, o número de registro.';
-           isSubmitting.value = false;
-           return;
-       }
-       
-       // Si no hay duplicados, procede a crear el registro
-       await axios.post('http://localhost:3000/api/registros', nuevoRegistro.value);
-       alert('Registro creado exitosamente');
-       resetForm();
-   } catch (err) {
-       console.error('Error al procesar el registro:', err);
-       errorMessage.value = 'Hubo un error al verificar o guardar el registro. Por favor, intente nuevamente.';
-   } finally {
-       isSubmitting.value = false;
-   }
- };
- 
- // Función para reiniciar el formulario
- const resetForm = () => {
-   nuevoRegistro.value = {
-     Registro: null,
-     Fecha: '',
-     id_usuario: null,
-     Nombre: '',
-     Domicilio_Calle: '',
-     Colonia_Comunidad: '',
-     Seccion: null,
-     Contacto: '',
-     TipoDeApoyo: '',
-     Descripcion_Apoyo: '',
-     Monto_Autorizado: null,
-     Otro_Tipo_De_Ayuda: '',
-     Turnado_A: '',
-     Historial: '',
-     Nube: '',
-     Observaciones: '', 
-     Status: 'En proceso',
-   };
-   errorMessage.value = '';
- };
- </script>
- 
+  
+  <script setup>
+  import { ref, onMounted } from 'vue';
+  import axios from 'axios';
+  import { useRouter } from 'vue-router';
+  import { normalizeText } from '../utils.js';
+  
+  const router = useRouter();
+  const user = ref(null);
+  const nuevoRegistro = ref({
+    Fecha: '',
+    Nombre: '',
+    Domicilio_Calle: '',
+    Colonia_Comunidad: '',
+    Seccion: null,
+    Contacto: '',
+    TipoDeApoyo: '',
+    Descripcion_Apoyo: '',
+    Monto_Autorizado: null,
+    Otro_Tipo_De_Ayuda: '',
+    Turnado_A: '',
+    Historial: '',
+    Nube: '',
+    Observaciones: '',
+    Status: 'En proceso',
+  });
+  
+  const isSubmitting = ref(false);
+  const errorMessage = ref('');
+  
+  onMounted(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      user.value = JSON.parse(storedUser);
+    } else {
+      errorMessage.value = 'No se encontró un usuario con sesión iniciada';
+      router.push('/login');
+    }
+  });
+  
+  const submitForm = async () => {
+    isSubmitting.value = true;
+    errorMessage.value = '';
+  
+    try {
+      nuevoRegistro.value.Domicilio_Calle = normalizeText(nuevoRegistro.value.Domicilio_Calle);
+      nuevoRegistro.value.Colonia_Comunidad = normalizeText(nuevoRegistro.value.Colonia_Comunidad);
+  
+      await axios.post('http://localhost:3030/api/registros', {
+        ...nuevoRegistro.value,
+        id_usuario: user.value.id_usuario,
+        creado_por_nombre: user.value.nombre
+      });
+  
+      alert('Registro creado exitosamente');
+      resetForm();
+      router.push('/perfil');
+    } catch (err) {
+      console.error('Error al procesar el registro:', err);
+      errorMessage.value = 'Hubo un error al guardar el registro. Por favor, intente nuevamente.';
+    } finally {
+      isSubmitting.value = false;
+    }
+  };
+  
+  const resetForm = () => {
+    nuevoRegistro.value = {
+      Fecha: '',
+      Nombre: '',
+      Domicilio_Calle: '',
+      Colonia_Comunidad: '',
+      Seccion: null,
+      Contacto: '',
+      TipoDeApoyo: '',
+      Descripcion_Apoyo: '',
+      Monto_Autorizado: null,
+      Otro_Tipo_De_Ayuda: '',
+      Turnado_A: '',
+      Historial: '',
+      Nube: '',
+      Observaciones: '',
+      Status: 'En proceso',
+    };
+    errorMessage.value = '';
+  };
+  
+  const cancelarApoyo = () => {
+    router.push('/perfil');
+  };
+  </script>
   
   <style scoped>
   .registro-form {
@@ -218,5 +214,17 @@
     margin-bottom: 10px;
     font-weight: bold;
   }
-  </style>
   
+  .btn-secondary {
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 10px;
+    cursor: pointer;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #5a6268;
+  }
+  </style>

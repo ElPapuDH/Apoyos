@@ -1,6 +1,5 @@
 <template>
   <div class="app-container">
-    <MenuComponent />
     <div class="main-content">
       <router-view></router-view>
     </div>
@@ -8,7 +7,6 @@
 </template>
 
 <script setup>
-import MenuComponent from './components/MenuComponent.vue';
 </script>
 
 <style>
